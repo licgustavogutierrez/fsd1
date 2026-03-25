@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Comparador de Voz</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #121212;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .box {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #referencia {
+            background: #1e1e1e;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            background: #00c853;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #resultado {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #00e676;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎤 Comparar voz con texto</h1>
+
+    <div id="referencia" class="box">
+        <h3>Texto a leer:</h3>
+        <p id="textoBase">
+            El sol brilla sobre la montaña mientras los pájaros cantan en el bosque
+        </p>
+    </div>
+
+    <div class="box">
+        <h3>Tu voz:</h3>
+        <textarea id="textoUsuario" placeholder="Lo que digas aparecerá aquí..."></textarea>
+        <br>
+        <button onclick="iniciarReconocimiento()">Hablar</button>
+    </div>
+
+    <div id="resultado"></div>
+
+    <script>
+        function iniciarReconocimiento() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+                alert("Tu navegador no soporta reconocimiento de voz");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+
+            recognition.lang = "es-ES";
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const texto = event.results[0][0].transcript;
+                const area = document.getElementById("textoUsuario");
+
+                area.value += texto + " ";
+                compararTexto();
+            };
+        }
+
+        function limpiarTexto(texto) {
+            return texto
+                .toLowerCase()
+                .replace(/[.,!?]/g, "")
+                .split(/\s+/);
+        }
+
+        function compararTexto() {
+            const base = limpiarTexto(document.getElementById("textoBase").innerText);
+            const usuario = limpiarTexto(document.getElementById("textoUsuario").value);
+
+            let coincidencias = 0;
+
+            usuario.forEach(palabra => {
+                if (base.includes(palabra)) {
+                    coincidencias++;
+                }
+            });
+
+            document.getElementById("resultado").innerHTML = `
+                Palabras dichas: ${usuario.length} <br>
+                Coincidencias: ${coincidencias} <br>
+                Precisión: ${Math.round((coincidencias / base.length) * 100)}%
+            `;
+        }
+    </script>
+
+</body>
+</html>
